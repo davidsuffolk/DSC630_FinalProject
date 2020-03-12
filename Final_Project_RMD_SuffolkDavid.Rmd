@@ -1,0 +1,182 @@
+---
+title: "FinalProject_R_SuffolkDavid"
+author: "David Suffolk"
+date: "2/9/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Import Data
+
+```{r}
+library(rpart)
+library(rpart.plot)
+```
+
+## Import Datasets
+
+```{r}
+data_accounting = read.csv("df_Accountant.csv", header = TRUE)
+data_RN = read.csv("df_RN.csv", header = TRUE)
+data_DataAnalyst <- read.csv("df_Data_Analyst.csv", header=TRUE)
+data_DataScientist <- read.csv("df_Data_Scientist.csv", header=TRUE)
+data_FinancialAnalyst <- read.csv("df_Financial_Analyst.csv", header=TRUE)
+data_GraphicDesigner <- read.csv("df_Graphic_Designer.csv", header=TRUE)
+data_ITManager <- read.csv("df_IT_Manager.csv", header=TRUE)
+data_Professor <- read.csv("df_Professor.csv", header=TRUE)
+data_ProjectMgr <- read.csv("df_Project_Mgr.csv", header=TRUE)
+data_Sales_Rep <- read.csv("df_Sales_Rep.csv", header=TRUE)
+data_Software_Engineer <- read.csv("df_Software_Engineer.csv", header=TRUE)
+data_Teacher <- read.csv("df_Teacher.csv", header=TRUE)
+```
+
+## Function Building ##
+
+```{r}
+decision_tree_job_title <- function(data){
+  data_updated <- data.frame(data$Month,data$YoY,data$Atlanta,data$Boston,data$Chicago,data$Houston,data$Los.Angeles,data$National,data$New.York.City,data$Philadelphia,data$San.Francisco,data$Seattle,data$Washington.DC,data$Value_split)
+  names(data_updated) <- c("Month","YoY","Atlanta","Boston","Chicago","Houston","Los_Angeles","National","New_York_City","Philadelphia","San_Francisco","Seattle","Washington_DC","Value_split")
+  ran <- sample(1:nrow(data_updated), 0.9 * nrow(data_updated))
+  nor <-function(x) { (x -min(x))/(max(x)-min(x)) }
+  train_norm <- as.data.frame(lapply(data_updated, nor))
+  data_train <- train_norm[ran,]
+  data_test <- train_norm[-ran,]
+  dtm <- rpart(Value_split~., data_train, method="class")
+  rpart.plot(dtm, compress=TRUE, uniform=TRUE)
+  p <- predict(dtm, data_test, type="class")
+  confMat <- table(data_test$Value_split,p)
+  accuracy <- sum(diag(confMat))/sum(confMat)
+  return (accuracy*100)
+}
+```
+  
+## Accountant ##  
+  
+```{r}
+decision_tree_job_title(data_accounting)
+```
+
+## Registered Nurse (RN) ##  
+  
+```{r}
+decision_tree_job_title(data_RN)
+```
+
+## Data Analyst ##  
+  
+```{r}
+decision_tree_job_title(data_DataAnalyst)
+```
+
+## Data Scientist ##  
+  
+```{r}
+decision_tree_job_title(data_DataScientist)
+```
+  
+## Financial Analyst ##  
+  
+```{r}
+decision_tree_job_title(data_FinancialAnalyst)
+```
+  
+## Graphic Designer ##  
+  
+```{r}
+decision_tree_job_title(data_GraphicDesigner)
+```
+  
+## IT Manager ##  
+  
+```{r}
+decision_tree_job_title(data_ITManager)
+```
+  
+## Professor ##  
+  
+```{r}
+decision_tree_job_title(data_Professor)
+```
+  
+## Sales Representative ##  
+  
+```{r}
+decision_tree_job_title(data_Sales_Rep)
+```
+  
+## Software Engineer ##  
+  
+```{r}
+decision_tree_job_title(data_Software_Engineer)
+```
+  
+## Teacher ##  
+  
+```{r}
+decision_tree_job_title(data_Teacher)
+```
+
+## Data Scientist Bins ##
+
+```{r}
+data_data_scientist_bins = read.csv("df_Data_Scientist_Bins.csv", header = TRUE)
+head(data_data_scientist_bins)
+```
+
+```{r}
+decision_tree_job_title_bins <- function(data){
+  data_updated <- data.frame(data$Month,data$YoY,data$Atlanta,data$Boston,data$Chicago,data$Houston,data$Los.Angeles,data$National,data$New.York.City,data$Philadelphia,data$San.Francisco,data$Seattle,data$Washington.DC,data$Value_bins)
+  names(data_updated) <- c("Month","YoY","Atlanta","Boston","Chicago","Houston","Los_Angeles","National","New_York_City","Philadelphia","San_Francisco","Seattle","Washington_DC","Value_bins")
+  ran <- sample(1:nrow(data_updated), 0.9 * nrow(data_updated))
+  nor <-function(x) { (x -min(x))/(max(x)-min(x)) }
+  train_norm <- as.data.frame(lapply(data_updated, nor))
+  data_train <- train_norm[ran,]
+  data_test <- train_norm[-ran,]
+  dtm <- rpart(Value_bins~., data_train, method="class")
+  rpart.plot(dtm, compress=TRUE, uniform=TRUE)
+  p <- predict(dtm, data_test, type="class")
+  confMat <- table(data_test$Value_bins,p)
+  accuracy <- sum(diag(confMat))/sum(confMat)
+  return (accuracy*100)
+}
+```
+
+```{r}
+decision_tree_job_title_bins(data_data_scientist_bins)
+```
+
+## Large Data Import ##
+
+```{r}
+all_data <- read.csv("df_all_final.csv", header = TRUE)
+summary(all_data)
+```
+
+```{r}
+drops <- c("X", "Metro","Dimension.Type","Dimension","Measure","Value")
+all_data_updated <- all_data[ , !(names(all_data) %in% drops)]
+summary(all_data_updated)
+```
+
+```{r}
+decision_tree_all <- function(data){
+  ran <- sample(1:nrow(data), 0.9 * nrow(data))
+  nor <-function(x) { (x -min(x))/(max(x)-min(x)) }
+  train_norm <- as.data.frame(lapply(data, nor))
+  data_train <- train_norm[ran,]
+  data_test <- train_norm[-ran,]
+  dtm <- rpart(Value_bins~., data_train, method="class")
+  rpart.plot(dtm, compress=TRUE, uniform=TRUE)
+  p <- predict(dtm, data_test, type="class")
+  confMat <- table(data_test$Value_bins,p)
+  accuracy <- sum(diag(confMat))/sum(confMat)
+  return (accuracy*100)
+}
+```
+
+```{r}
+decision_tree_all(all_data_updated)
+```
